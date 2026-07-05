@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+  <meta name="description" content="Happy Birthday Ray Chetti!">
+  <meta property="og:title" content="Happy Birthday Ray Chetti">
+  <meta property="og:description" content="생일 축하합니다, 임동준님">
+  <title>Happy Birthday Ray Chetti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #feca57;
+      --rose: #ff6b6b;
+      --sky: #48dbfb;
+      --violet: #f093fb;
+      --mint: #2ed573;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Noto Sans KR', sans-serif; background: #0a0a1a; user-select: none; -webkit-user-select: none; touch-action: none; }
+
+    #deck { width: 100%; height: 100%; position: relative; perspective: 1300px; }
+
+    .page {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 2rem; will-change: transform; contain: layout style;
+      backface-visibility: hidden; opacity: 0; pointer-events: none;
+      transition: transform .5s cubic-bezier(.34,1.56,.64,1), opacity .4s ease;
+    }
+    .page.active { opacity: 1; pointer-events: auto; z-index: 10; }
+    .page.canvas-off { transition: none !important; }
+    .page.hide-prev { transform: translateX(-20%) scale(.93); opacity: 0; z-index: 5; }
+    .page.hide-next { transform: translateX(20%) scale(.93); opacity: 0; z-index: 6; }
+    .page canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .page:not(.active) canvas { display: none; }
+    .page-content { position: relative; z-index: 2; text-align: center; width: 100%; max-width: 480px; pointer-events: none; }
+
+    .page-0 { background: linear-gradient(160deg, #1a0a2e, #2d1b4e 35%, #16213e 70%, #0f3460); }
+    .page-1 { background: linear-gradient(160deg, #070720, #0d1b3e 50%, #12082a); }
+    .page-2 { background: linear-gradient(160deg, #0a1628, #1a0a2e 50%, #2d0a1e); }
+    .page-3 { background: linear-gradient(160deg, #1a0a2e, #1a1a3e 50%, #0f263a); }
+    .page-4 { background: radial-gradient(ellipse at 50% 40%, #1a0a2e, #0a0a1a); }
+
+    .badge {
+      position: absolute; top: max(env(safe-area-inset-top,1rem),1rem);
+      right: max(env(safe-area-inset-right,1rem),1rem);
+      font-size: .7rem; color: rgba(255,255,255,.1); letter-spacing: .12em; z-index: 20; pointer-events: none;
+    }
+
+    /* ── Gradients ── */
+    .grd {
+      background: linear-gradient(135deg, var(--gold), var(--rose), var(--violet), var(--sky));
+      background-size: 300% 300%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    @keyframes shimmer { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    .shimmer { animation: shimmer 4s ease infinite; }
+
+    /* ── Nav ── */
+    #nav {
+      position: fixed; bottom: max(env(safe-area-inset-bottom,1.2rem),1.2rem);
+      left: 0; width: 100%; display: flex; justify-content: center; gap: .5rem; z-index: 100; pointer-events: none;
+    }
+    #nav .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,.15); transition: all .5s cubic-bezier(.34,1.56,.64,1);
+      pointer-events: auto; cursor: pointer;
+    }
+    #nav .dot.on { background: var(--gold); box-shadow: 0 0 16px rgba(254,202,87,.5); transform: scale(1.5); }
+
+    .hint {
+      position: absolute; bottom: max(env(safe-area-inset-bottom,4rem),4rem);
+      left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,.12); font-size: .7rem; letter-spacing: .15em;
+      pointer-events: none; animation: pulseY 2.8s ease-in-out infinite; z-index: 5; white-space: nowrap;
+    }
+    @keyframes pulseY { 0%,100%{opacity:.12;transform:translateX(-50%) translateY(0)} 50%{opacity:.4;transform:translateX(-50%) translateY(-6px)} }
+
+    /* ── BGM Play button ── */
+    .play-btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+      margin-top:1.2rem; padding:.6rem 1.6rem .6rem 1.2rem;
+      border:1.5px solid rgba(254,202,87,.35); border-radius:100px;
+      background:rgba(254,202,87,.06); color:var(--gold);
+      font-size:clamp(.8rem,2.8vw,1rem); letter-spacing:.08em; cursor:pointer;
+      transition:all .3s; backdrop-filter:blur(4px);
+      position:relative; pointer-events:auto;
+    }
+    .play-btn:hover { background:rgba(254,202,87,.15); border-color:var(--gold); }
+    .play-btn .ico { display:inline-block; font-size:1.2em; line-height:1; }
+    .play-btn .pl { display:none; }
+    .play-btn.playing .pl { display:inline; }
+    .play-btn.playing .pp { display:none; }
+    @keyframes breathe { 0%,100%{box-shadow:0 0 0 0 rgba(254,202,87,.2)} 50%{box-shadow:0 0 0 12px rgba(254,202,87,0)} }
+    .play-btn { animation:breathe 2s ease-in-out infinite; }
+
+    /* ── Mini speaker ── */
+    .speaker {
+      position:fixed; top:max(env(safe-area-inset-top,.6rem),.6rem);
+      left:max(env(safe-area-inset-left,.6rem),.6rem);
+      z-index:200; width:32px; height:32px; border-radius:50%;
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:center;
+      font-size:.85rem; cursor:pointer; pointer-events:auto;
+      transition:all .3s; opacity:0;
+    }
+    .speaker.show { opacity:1; }
+    .speaker.muted { opacity:.3; }
+    .speaker .wave { display:inline-block; animation:wave 1.2s ease-in-out infinite; }
+    .speaker.muted .wave { animation:none; }
+    @keyframes wave { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.85)} }
+
+    /* ── Cover ── */
+    .cv-emoji { font-size: clamp(2.5rem,10vw,4.5rem); margin-bottom: .3rem; }
+    .cv-name { font-family:'Playfair Display',serif; font-size: clamp(2rem,8vw,4rem); font-weight:700; line-height:1.2; margin-bottom:.2rem; }
+    .cv-hr { width:50px; height:1.5px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:.6rem auto; }
+    .cv-sub { font-size:clamp(.9rem,3vw,1.3rem); color:rgba(255,255,255,.3); letter-spacing:.4em; }
+
+    /* ── Card 1: Constellation ── */
+    .cn-title { font-family:'Playfair Display',serif; font-size:clamp(1.3rem,4vw,2rem); color:rgba(255,255,255,.85); margin-bottom:.3rem; }
+    .cn-sub { font-size:clamp(.65rem,2vw,.8rem); color:rgba(255,255,255,.2); letter-spacing:.1em; margin-bottom:1.2rem; }
+    .cn-tags { display:flex; flex-wrap:wrap; justify-content:center; gap:.4rem; max-width:400px; margin:0 auto; }
+    .cn-tags span { padding:.25rem .75rem; background:rgba(255,255,255,.04); border-radius:100px; font-size:.65rem; letter-spacing:.05em; border:1px solid rgba(255,255,255,.06); }
+
+    /* ── Card 2: Miracle numbers ── */
+    .miracle-box { display:flex; flex-direction:column; align-items:center; gap:1.2rem; }
+    .m-panel {
+      background:rgba(255,255,255,.04); backdrop-filter:blur(12px); border-radius:20px;
+      padding:1rem 1.5rem; width:100%; max-width:360px; border:1px solid rgba(255,255,255,.06); position:relative; overflow:hidden;
+    }
+    .m-label { font-size:clamp(.55rem,2vw,.7rem); color:rgba(255,255,255,.25); letter-spacing:.12em; margin-bottom:.1rem; }
+    .m-val {
+      font-family:'Playfair Display',serif; font-weight:700;
+      display:inline-block; position:relative;
+    }
+
+    /* number digit cells */
+    .digit-cell {
+      display:inline-block; overflow:hidden; vertical-align:middle;
+      font-family:'Playfair Display',serif; font-weight:700;
+      position:relative; height:1.1em; line-height:1.1;
+    }
+    .digit-strip { transition:transform .6s cubic-bezier(.34,1.56,.64,1); }
+    .digit-strip span { display:block; height:1.1em; line-height:1.1; }
+
+    /* candles */
+    .cwrap { display:flex; justify-content:center; gap:.2rem; margin:.4rem 0; flex-wrap:wrap; }
+    .cwl {
+      width:clamp(14px,3.5vw,22px); height:clamp(28px,7vw,44px);
+      background:linear-gradient(180deg,var(--gold),#ff9a3c 60%,var(--rose));
+      border-radius:3px 3px 2px 2px; position:relative;
+      box-shadow:0 2px 8px rgba(254,202,87,.15);
+    }
+    .cwl .flm {
+      position:absolute; top:-11px; left:50%; transform:translateX(-50%);
+      width:7px; height:12px;
+      background:radial-gradient(ellipse at center,#fff7a0,var(--gold) 40%,var(--rose));
+      border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+      box-shadow:0 0 16px rgba(254,202,87,.5),0 0 30px rgba(255,107,107,.2);
+      transition:transform .08s;
+    }
+    .cwl .flm-in { position:absolute; top:2px; left:50%; transform:translateX(-50%); width:3px; height:4px; background:rgba(255,255,255,.6); border-radius:50%; }
+
+    /* ── Card 3: Letter ── */
+    .letter {
+      width:100%; max-width:420px; margin:0 auto;
+      background:rgba(255,255,255,.04); backdrop-filter:blur(8px); border-radius:24px;
+      padding:1.8rem 1.5rem; border:1px solid rgba(255,255,255,.06); text-align:left; position:relative; overflow:hidden;
+    }
+    .letter::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 30% 20%,rgba(254,202,87,.04),transparent 60%); pointer-events:none; }
+    .letter dt { font-size:.6rem; color:rgba(255,255,255,.15); letter-spacing:.1em; margin-bottom:1rem; }
+    .letter p { font-size:clamp(.78rem,2.8vw,.95rem); line-height:1.9; color:rgba(255,255,255,.65); font-weight:300; margin-bottom:.8rem; }
+    .letter .hl { color:var(--gold); font-weight:400; }
+    .letter .sign { margin-top:1rem; text-align:right; font-size:clamp(.7rem,2.5vw,.85rem); color:rgba(255,255,255,.3); font-style:italic; }
+
+    /* ── Card 4: Finale + Cake ── */
+    .finale-title { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,7vw,3rem); font-weight:700; line-height:1.2; }
+    .finale-sub { font-size:clamp(.8rem,2.8vw,1.1rem); color:rgba(255,255,255,.4); margin-top:.3rem; font-weight:300; letter-spacing:.1em; }
+    .finale-msg { font-size:clamp(.8rem,2.5vw,1rem); color:rgba(255,255,255,.3); margin-top:.8rem; line-height:1.8; font-weight:300; }
+    .finale-see { margin-top:1rem; font-size:clamp(.65rem,2vw,.8rem); color:rgba(255,255,255,.18); letter-spacing:.1em; }
+
+    /* Cake */
+    .cake-box { position:relative; margin:.5rem auto; width:clamp(120px,40vw,200px); height:clamp(100px,34vw,170px); cursor:pointer; }
+    .cake-base {
+      position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+      width:100%; height:60%;
+      background:linear-gradient(180deg,#d4a574,#b8835a 60%,#9a6b48);
+      border-radius:8px 8px 4px 4px;
+      box-shadow:0 6px 30px rgba(0,0,0,.3);
+    }
+    .cake-base::after {
+      content:''; position:absolute; top:0; left:0; right:0; height:12%;
+      background:linear-gradient(180deg,rgba(255,255,255,.2),transparent);
+      border-radius:8px 8px 0 0;
+    }
+    .cake-top {
+      position:absolute; bottom:54%; left:50%; transform:translateX(-50%);
+      width:76%; height:42%;
+      background:linear-gradient(180deg,#e8c49a,#d4a574 60%,#b8835a);
+      border-radius:6px 6px 3px 3px;
+      box-shadow:0 4px 20px rgba(0,0,0,.25);
+    }
+    .cake-top::after {
+      content:''; position:absolute; top:0; left:0; right:0; height:14%;
+      background:linear-gradient(180deg,rgba(255,255,255,.25),transparent);
+      border-radius:6px 6px 0 0;
+    }
+    .frosting {
+      position:absolute; bottom:52%; left:50%; transform:translateX(-50%);
+      width:82%; height:6%;
+      background:linear-gradient(180deg,#fff5e0,#f5e6cc);
+      border-radius:4px;
+      box-shadow:0 2px 10px rgba(0,0,0,.15);
+    }
+    .frosting::before, .frosting::after {
+      content:''; position:absolute;
+      width:clamp(6px,2vw,10px); height:clamp(8px,2.5vw,12px);
+      background:#f5e6cc; border-radius:0 0 50% 50%;
+      top:80%; transform:translateX(-50%);
+    }
+    .frosting::before { left:20%; }
+    .frosting::after { left:80%; }
+    .cherry {
+      position:absolute; bottom:92%; left:50%; transform:translateX(-50%);
+      width:clamp(8px,3vw,14px); height:clamp(8px,3vw,14px);
+      background:radial-gradient(circle at 35% 35%,#ff6b6b,#c0392b);
+      border-radius:50%;
+      box-shadow:0 2px 6px rgba(0,0,0,.2);
+      z-index:3;
+    }
+    .cherry-stem {
+      position:absolute; bottom:96%; left:50%; transform:translateX(-50%) rotate(-20deg);
+      width:2px; height:clamp(6px,2vw,10px);
+      background:#5d4037; transform-origin:bottom center; z-index:2;
+    }
+    .candle-big {
+      position:absolute; bottom:95%; left:50%; transform:translateX(-50%);
+      width:clamp(10px,3.5vw,16px); height:clamp(20px,7vw,32px);
+      background:linear-gradient(180deg,#ffd93d,#ff9a3c 50%,#ff6b6b);
+      border-radius:3px; z-index:4;
+      box-shadow:0 2px 8px rgba(0,0,0,.2);
+    }
+    .candle-big .flm-big {
+      position:absolute; top:-clamp(10px,3.5vw,16px); left:50%; transform:translateX(-50%);
+      width:clamp(8px,2.8vw,13px); height:clamp(12px,4.5vw,20px);
+      background:radial-gradient(ellipse at center,#fff7a0,var(--gold) 35%,var(--rose) 70%,transparent);
+      border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+      box-shadow:0 0 30px rgba(254,202,87,.8),0 0 60px rgba(255,107,107,.3);
+      transition:all .15s;
+    }
+    .candle-big .flm-big-in {
+      position:absolute; top:clamp(3px,1vw,5px); left:50%; transform:translateX(-50%);
+      width:clamp(3px,1vw,5px); height:clamp(4px,1.5vw,7px);
+      background:rgba(255,255,255,.7); border-radius:50%;
+    }
+    .candle-big.out .flm-big {
+      transform:translateX(-50%) scale(.1); opacity:0; box-shadow:none;
+    }
+
+    /* smoke puff */
+    .puff { position:absolute; pointer-events:none; z-index:10; }
+
+    /* ── Entrance animations ── */
+    .enter { animation: fadeUp .6s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(1.5rem)} to{opacity:1;transform:translateY(0)} }
+    .d1 { animation-delay:.08s; } .d2 { animation-delay:.16s; } .d3 { animation-delay:.24s; } .d4 { animation-delay:.32s; } .d5 { animation-delay:.40s; }
+
+    /* ── Digit roll animation ── */
+    .roll-in { animation: rollDown .5s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes rollDown { from{transform:translateY(-100%);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    /* ── Responsive ── */
+    @media(max-width:380px){ .page{padding:1rem} .letter{padding:1.2rem 1rem} .m-panel{padding:.8rem 1rem} }
+    @media(min-width:768px){ .page{padding:3rem} }
+    ::-webkit-scrollbar { display:none; }
+  </style>
+</head>
+<body>
+
+  <audio id="bgm" preload="auto" loop>
+    <source src="Here's to the Miles.mp3" type="audio/mpeg">
+  </audio>
+  <div class="speaker" id="speaker"><span class="wave">♪</span></div>
+
+  <div id="deck">
+
+    <!-- PAGE 0: COVER -->
+    <div class="page active page-0" data-idx="0">
+      <canvas></canvas>
+      <div class="badge">1/5</div>
+      <div class="page-content">
+        <div class="cv-emoji enter">🎂</div>
+        <div class="cv-name grd shimmer enter d1">Ray Chetti</div>
+        <div class="cv-hr enter d2"></div>
+        <div class="cv-sub enter d2">임 동 준</div>
+        <div class="enter d3" style="margin-top:.8rem;font-size:clamp(1rem,3.5vw,1.5rem);letter-spacing:.1rem;">🎉 🎈 🎊</div>
+        <div class="play-btn enter d4" id="play-btn"><span class="ico pp">▶</span><span class="ico pl">⏸</span><span>Listen</span></div>
+      </div>
+      <div class="hint">← swipe →</div>
+    </div>
+
+    <!-- PAGE 1: CONSTELLATION -->
+    <div class="page page-1" data-idx="1">
+      <canvas></canvas>
+      <div class="badge">2/5</div>
+      <div class="page-content" style="z-index:3;position:relative;">
+        <p class="cn-title enter">✦ Your Universe ✦</p>
+        <p class="cn-sub enter d1">a constellation of places & moments</p>
+        <div class="cn-tags enter d2">
+          <span style="color:var(--rose)">🇰🇷 Seoul</span>
+          <span style="color:var(--sky)">🇺🇸 Buffalo</span>
+          <span style="color:var(--gold)">🇶🇦 Doha</span>
+          <span style="color:var(--mint)">🇸🇬 Singapore</span>
+          <span style="color:var(--violet)">🏛️ ULI</span>
+          <span style="color:var(--sky)">🚀 XAI Land</span>
+          <span style="color:var(--rose)">🌀 Rotary</span>
+          <span style="color:var(--gold)">🇺🇸 NYC</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: MIRACLE -->
+    <div class="page page-2" data-idx="2">
+      <canvas></canvas>
+      <div class="badge">3/5</div>
+      <div class="page-content">
+        <div class="miracle-box">
+          <div class="m-panel">
+            <div class="m-label">✦ probability of being you ✦</div>
+            <div style="margin:.2rem 0;">
+              <span class="m-val" style="font-size:clamp(1.6rem,6vw,2.8rem);color:var(--gold);">1</span>
+              <span style="font-size:clamp(.7rem,2.2vw,.9rem);color:rgba(255,255,255,.25);margin:0 .1rem;">in</span>
+              <span class="m-val" style="font-size:clamp(1.4rem,5.5vw,2.6rem);color:var(--sky);" id="prob-digits">400</span>
+              <span class="m-val" style="font-size:clamp(1rem,4vw,1.8rem);color:var(--violet);margin-left:.1rem;" id="prob-unit">Trillion</span>
+            </div>
+            <p style="color:rgba(255,255,255,.12);font-size:.5rem;margin-top:.2rem;letter-spacing:.06em;">YOUR EXISTENCE IS A COSMIC MIRACLE</p>
+          </div>
+          <div class="m-panel" style="text-align:center;">
+            <div class="m-label">✦ this is your ✦</div>
+            <div style="display:flex;justify-content:center;gap:.05em;margin:.1rem 0;" id="bday-digits">
+              <span class="digit-cell m-val" style="font-size:clamp(2rem,8vw,3.5rem);height:1.1em;" data-d="3"></span>
+              <span class="digit-cell m-val" style="font-size:clamp(2rem,8vw,3.5rem);height:1.1em;" data-d="8"></span>
+            </div>
+            <div style="font-size:clamp(.8rem,2.8vw,1.1rem);color:rgba(255,255,255,.35);margin-top:-.2rem;font-weight:300;">th birthday</div>
+            <div class="cwrap" id="cwrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: LETTER -->
+    <div class="page page-3" data-idx="3">
+      <canvas></canvas>
+      <div class="badge">4/5</div>
+      <div class="page-content">
+        <div class="letter">
+          <dt>2025. 추석 · 그리고 그 이후</dt>
+          <p>Raymond Chetti (임동준) 님께,</p>
+          <p>추석 때 처음 뵙게 되어 정말 <span class="hl">영광</span>이었습니다. 많은 이야기를 나누고 싶었는데, 제가 좀 어색하게 다가간 탓에 많이 아쉬움이 남았습니다.</p>
+          <p>그래도 임동준님 께서 너무 편하게 대해주셔서, 그 날의 기억은 지금도 따뜻하게 남아 있습니다.</p>
+          <p>LBTO 박람회 때 사진이라도 한 컷 남기고 싶었는데 그마저도 못해 아쉬움이 큽니다.</p>
+          <p>다음에 뵙게 된다면 그 때는 더 편하게, 더 흥미로운 이야기들을 나눌 수 있으면 좋겠습니다.</p>
+          <p>생일 진심으로 축하드립니다. 🎂</p>
+          <div class="sign">— 감사한 마음을 담아</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 4: FINALE -->
+    <div class="page page-4" data-idx="4">
+      <canvas></canvas>
+      <div class="badge">5/5</div>
+      <div class="page-content" style="z-index:3;position:relative;">
+        <div class="finale-title grd shimmer">Happy Birthday</div>
+        <div class="finale-sub">Ray Chetti (임동준)</div>
+        <div class="cake-box" id="cake-box">
+          <div class="cherry-stem"></div>
+          <div class="cherry"></div>
+          <div class="candle-big" id="big-candle">
+            <div class="flm-big" id="big-flame"><div class="flm-big-in"></div></div>
+          </div>
+          <div class="frosting"></div>
+          <div class="cake-top"></div>
+          <div class="cake-base"></div>
+        </div>
+        <div class="finale-msg" id="finale-msg">오늘은 당신이 이 세상에 태어난<br>가장 특별한 날입니다</div>
+        <div class="finale-see" id="finale-see">🎂 🎈 🎉 🎊 🥳</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="nav">
+    <div class="dot on" data-i="0"></div>
+    <div class="dot" data-i="1"></div>
+    <div class="dot" data-i="2"></div>
+    <div class="dot" data-i="3"></div>
+    <div class="dot" data-i="4"></div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // ──────────────────────── CONFIG ────────────────────────
+    var BIRTH_YEAR = 1988;
+    var TOTAL_PAGES = 5;
+    var AGE = 2026 - BIRTH_YEAR;
+
+    // ──────────────────────── DOM REFS ──────────────────────
+    var pages = document.querySelectorAll('.page');
+    var dots = document.querySelectorAll('.dot');
+    var deck = document.getElementById('deck');
+    var W = window.innerWidth;
+    var H = window.innerHeight;
+    var cur = 0;
+    var busy = false;
+
+    // ──────────────────────── NAVIGATION ────────────────────
+    function applyPageClasses() {
+      pages.forEach(function (el, i) {
+        el.classList.remove('active', 'hide-prev', 'hide-next');
+
+        if (i === cur) {
+          el.classList.add('active');
+        } else if (i < cur) {
+          el.classList.add('hide-prev');
+        } else {
+          el.classList.add('hide-next');
+        }
+      });
+
+      dots.forEach(function (d, i) {
+        d.classList.toggle('on', i === cur);
+      });
+
+      triggerEnter(cur);
+    }
+
+    function goTo(idx) {
+      if (busy || idx === cur || idx < 0 || idx >= TOTAL_PAGES) return;
+      busy = true;
+      var prev = cur;
+      cur = idx;
+
+      // 1. Apply new classes (pages still hold drag inline styles)
+      applyPageClasses();
+      onPageEnter(cur, prev);
+
+      // 2. Force reflow so browser registers the class change
+      void document.body.offsetHeight;
+
+      // 3. setTimeout(0) → browser paints ONE frame with:
+      //    - new classes applied
+      //    - old drag inline styles still overriding
+      //    - CSS transitions active (canvas-off was removed in touchend)
+      //    After paint, clear inline styles → CSS transitions animate from
+      //    the painted drag position to the target class position
+      setTimeout(function () {
+        clearInlineStyles([prev, cur]);
+      }, 0);
+
+      setTimeout(function () { busy = false; }, 600);
+    }
+
+    function next() { goTo(cur + 1); }
+    function prev() { goTo(cur - 1); }
+
+    function snapBack() {
+      if (busy) return;
+      // Clear inline styles → CSS transitions animate drag→class
+      clearInlineStyles([cur]);
+      if (cur > 0) clearInlineStyles([cur - 1]);
+      if (cur < TOTAL_PAGES - 1) clearInlineStyles([cur + 1]);
+    }
+
+    // ── trigger CSS entrance animations ──
+    var enterTimers = [];
+    function triggerEnter(idx) {
+      enterTimers.forEach(clearTimeout);
+      enterTimers = [];
+      var p = pages[idx];
+      var els = p.querySelectorAll('.enter');
+      els.forEach(function (e) { e.classList.remove('enter'); });
+      // re-trigger in next frame
+      enterTimers.push(setTimeout(function () {
+        els.forEach(function (e) { e.classList.add('enter'); });
+        // remove after animation to avoid memory
+        enterTimers.push(setTimeout(function () {
+          els.forEach(function (e) { e.classList.remove('enter'); });
+        }, 800));
+      }, 50));
+    }
+
+    // ──────────────────────── TOUCH ─────────────────────────
+    var tch = { sx: 0, sy: 0, dx: 0, drag: false };
+
+    function clearInlineStyles(indices) {
+      for (var ii = 0; ii < indices.length; ii++) {
+        var pidx = indices[ii];
+        if (pidx >= 0 && pidx < TOTAL_PAGES) {
+          pages[pidx].style.opacity = '';
+          pages[pidx].style.transform = '';
+          pages[pidx].style.zIndex = '';
+        }
+      }
+    }
+
+    deck.addEventListener('touchstart', function (e) {
+      if (busy) return;
+      var t = e.touches[0];
+      tch.sx = t.clientX;
+      tch.sy = t.clientY;
+      tch.dx = 0;
+      tch.drag = true;
+      pages.forEach(function (c) { c.classList.add('canvas-off'); });
+    }, { passive: true });
+
+    deck.addEventListener('touchmove', function (e) {
+      if (busy || !tch.drag) return;
+      var t = e.touches[0];
+      var dx = t.clientX - tch.sx;
+      var dy = t.clientY - tch.sy;
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 15) { tch.drag = false; return; }
+      tch.dx = dx;
+      var pct = dx / W;
+      var el = pages[cur];
+      if (el) {
+        el.style.opacity = '1';
+        el.style.transform = 'translateX(' + dx + 'px) scale(' + (1 - Math.abs(pct) * .05) + ')';
+        el.style.zIndex = 10;
+      }
+
+      if (dx < 0 && cur < TOTAL_PAGES - 1) {
+        var n = pages[cur + 1];
+        var np = Math.min(1, Math.abs(pct) * 2);
+        n.style.opacity = String(np * .4);
+        n.style.transform = 'translateX(' + (W * .2 + dx * .35) + 'px) scale(' + (.93 + np * .04) + ')';
+        n.style.zIndex = 9;
+      } else if (dx > 0 && cur > 0) {
+        var p = pages[cur - 1];
+        var pp = Math.min(1, Math.abs(pct) * 2);
+        p.style.opacity = String(pp * .4);
+        p.style.transform = 'translateX(' + (-W * .2 + dx * .35) + 'px) scale(' + (.93 + pp * .04) + ')';
+        p.style.zIndex = 9;
+      }
+    }, { passive: true });
+
+    function endTouch() {
+      if (busy) return;
+      pages.forEach(function (c) { c.classList.remove('canvas-off'); });
+      if (!tch.drag) { tch.dx = 0; return; }
+      tch.drag = false;
+      var thr = W * .18;
+      if (tch.dx < -thr && cur < TOTAL_PAGES - 1) next();
+      else if (tch.dx > thr && cur > 0) prev();
+      else snapBack();
+      tch.dx = 0;
+    }
+
+    deck.addEventListener('touchend', endTouch, { passive: true });
+    deck.addEventListener('touchcancel', endTouch, { passive: true });
+
+    dots.forEach(function (d) {
+      d.addEventListener('click', function () { goTo(parseInt(d.dataset.i)); });
+    });
+    document.addEventListener('keydown', function (e) {
+      var k = e.key || '';
+      if (k === 'ArrowRight' || k === 'ArrowDown' || e.keyCode === 39 || e.keyCode === 40) next();
+      if (k === 'ArrowLeft' || k === 'ArrowUp' || e.keyCode === 37 || e.keyCode === 38) prev();
+    });
+
+    // ──────────────────────── PARTICLES ─────────────────────
+    var MAX_P = 600;
+
+    function P() {
+      this.reset = function () {
+        this.x = 0; this.y = 0; this.vx = 0; this.vy = 0;
+        this.life = 0; this.max = 0; this.sz = 0; this.c = '#fff';
+        this.a = 1; this.g = 0; this.f = 1; this.rot = 0; this.rs = 0;
+        this.used = false;
+        return this;
+      };
+      this.reset();
+    }
+
+    var pool = [];
+    for (var i = 0; i < MAX_P; i++) pool.push(new P());
+
+    function alloc() {
+      for (var i = 0; i < pool.length; i++) {
+        if (!pool[i].used) { pool[i].used = true; return pool[i]; }
+      }
+      return null;
+    }
+
+    function free(p) { p.used = false; }
+
+    function freeAll(list) {
+      while (list.length) free(list.pop());
+    }
+
+    // per-page particle lists
+    var PL = [[], [], [], [], []];
+
+    function clearPageFx(idx) {
+      if (PL[idx]) freeAll(PL[idx]);
+      if (idx === 4) rocketList.length = 0;
+    }
+
+    // ──────────────────────── PAGE SCENES ───────────────────
+    // Each scene is a { draw, enter, exit } bag.
+
+    // Scene 0: sparkles
+    function spawnSpark() {
+      var p = alloc(); if (!p) return;
+      var palette = ['#feca57','#ff6b6b','#48dbfb','#f093fb','#2ed573','#fff'];
+      p.x = Math.random() * W; p.y = Math.random() * H;
+      p.vx = (Math.random() - .5) * .4;
+      p.vy = -Math.random() * .6 - .2;
+      p.sz = 1 + Math.random() * 3;
+      p.max = 100 + Math.random() * 140;
+      p.life = 0;
+      p.c = palette[Math.floor(Math.random() * palette.length)];
+      p.a = .5 + Math.random() * .5;
+      p.g = -.008;
+      p.f = .995;
+      PL[0].push(p);
+    }
+
+    // Scene 1: constellation
+    var STARS = [];
+    var STAR_LINKS = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0],[0,3],[1,4],[2,5],[3,6],[0,7]];
+    var STAR_LABELS = { 0:'Seoul', 1:'Buffalo', 2:'Doha', 3:'Singapore', 4:'ULI', 5:'XAI Land', 6:'Rotary', 7:'NYC' };
+    (function () {
+      var keyPos = [[.5,.3],[.22,.5],[.72,.52],[.78,.72],[.32,.22],[.62,.38],[.38,.68],[.12,.38]];
+      for (var i = 0; i < 40; i++) {
+        STARS.push({ x:.04+Math.random()*.92, y:.04+Math.random()*.92, r:1+Math.random()*2.5, ph:Math.random()*6.28, sp:.4+Math.random()*2, label:'' });
+      }
+      keyPos.forEach(function (pos, idx) {
+        if (idx < STARS.length) { STARS[idx].x = pos[0]; STARS[idx].y = pos[1]; STARS[idx].r = 3.5; STARS[idx].label = STAR_LABELS[idx]||''; }
+      });
+    })();
+
+    // Scene 2: number glow
+    function spawnGlow() {
+      var p = alloc(); if (!p) return;
+      p.x = Math.random() * W; p.y = H + 10;
+      p.vx = (Math.random() - .5) * 1;
+      p.vy = -Math.random() * 1.8 - .3;
+      p.sz = 6 + Math.random() * 18;
+      p.max = 120 + Math.random() * 120;
+      p.life = 0;
+      p.c = ['#feca57','#ff6b6b','#48dbfb','#f093fb','#2ed573'][Math.floor(Math.random() * 5)];
+      p.a = .15 + Math.random() * .25;
+      p.g = 0; p.f = .995;
+      PL[2].push(p);
+    }
+
+    // Scene 3: letter warmth
+    function spawnWarm() {
+      var p = alloc(); if (!p) return;
+      p.x = Math.random() * W; p.y = H + 5;
+      p.vx = (Math.random() - .5) * .5;
+      p.vy = -.3 - Math.random() * .7;
+      p.sz = 2 + Math.random() * 5;
+      p.max = 180 + Math.random() * 120; p.life = 0;
+      p.c = ['#feca57','#ffd93d','#ff9a3c','#fff'][Math.floor(Math.random()*4)];
+      p.a = .08 + Math.random() * .15;
+      p.g = 0; p.f = .995;
+      PL[3].push(p);
+    }
+
+    // Scene 4: fireworks + confetti
+    var rocketList = [];
+    function Rocket() {
+      this.x = Math.random() * W; this.y = H;
+      this.target = 40 + Math.random() * H * .35;
+      this.speed = 3 + Math.random() * 5;
+      this.vx = (Math.random() - .5) * 1.2;
+      this.c = ['#feca57','#ff6b6b','#48dbfb','#f093fb','#2ed573','#ff9ff3','#54a0ff'][Math.floor(Math.random()*7)];
+      this.alive = true;
+    }
+    function launchRk() { if (rocketList.length < 6) rocketList.push(new Rocket()); }
+    function burstRk(r) {
+      var n = 25 + Math.floor(Math.random() * 25);
+      for (var i = 0; i < n; i++) {
+        var p = alloc(); if (!p) continue;
+        var a = (i / n) * 6.28 + (Math.random() - .5) * .3;
+        var spd = 1 + Math.random() * 4;
+        p.x = r.x; p.y = r.y;
+        p.vx = Math.cos(a) * spd + (Math.random() - .5) * .8;
+        p.vy = Math.sin(a) * spd + (Math.random() - .5) * .8;
+        p.sz = 1.5 + Math.random() * 4;
+        p.max = 40 + Math.random() * 50; p.life = 0;
+        p.c = r.c; p.a = 1; p.g = .04; p.f = .96;
+        PL[4].push(p);
+      }
+    }
+    function spawnConf() {
+      for (var j = 0; j < 2; j++) {
+        var p = alloc(); if (!p) continue;
+        p.x = Math.random() * W; p.y = -10 - Math.random() * 30;
+        p.vx = (Math.random() - .5) * 1.2;
+        p.vy = .5 + Math.random() * 1.5;
+        p.sz = 3 + Math.random() * 6;
+        p.max = 250 + Math.random() * 150; p.life = 0;
+        p.c = ['#ff6b6b','#feca57','#48dbfb','#f093fb','#2ed573','#ff9ff3','#ff6348'][Math.floor(Math.random()*7)];
+        p.a = .7; p.g = .015; p.f = .995; p.rot = Math.random()*360; p.rs = (Math.random()-.5)*8;
+        PL[4].push(p);
+      }
+    }
+
+    // ─── Canvas setup ───
+    var cvs = [], ctx = [];
+
+    function initCanvas() {
+      pages.forEach(function (pg, i) {
+        var cv = pg.querySelector('canvas');
+        cv.width = W; cv.height = H;
+        cvs[i] = cv; ctx[i] = cv.getContext('2d');
+      });
+    }
+
+    function resizeCanvas() {
+      cvs.forEach(function (c) { c.width = W; c.height = H; });
+    }
+
+    // ─── Render loop ───
+    var frame = 0, rid = 0;
+
+    function draw() {
+      frame++;
+      for (var ci = 0; ci < TOTAL_PAGES; ci++) {
+        if (ctx[ci]) ctx[ci].clearRect(0, 0, W, H);
+      }
+
+      var idx = cur;
+
+      // Scene 0: Sparkles
+      if (idx === 0) {
+        if (frame % 6 === 0) spawnSpark();
+        var c0 = ctx[0], l0 = PL[0];
+        for (var i0 = l0.length - 1; i0 >= 0; i0--) {
+          var p = l0[i0]; if (p.used === false) { l0.splice(i0,1); continue; }
+          p.life++; if (p.life > p.max) { free(p); l0.splice(i0,1); continue; }
+          p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= p.f;
+          var lr = p.life / p.max, al = p.a * (1 - lr), sz = p.sz * (.5 + lr * .8);
+          c0.save();
+          c0.globalAlpha = al;
+          c0.shadowColor = p.c; c0.shadowBlur = 15;
+          c0.fillStyle = p.c;
+          c0.beginPath(); c0.arc(p.x, p.y, sz, 0, 6.28); c0.fill();
+          c0.shadowBlur = 4;
+          c0.strokeStyle = p.c; c0.lineWidth = .5;
+          c0.beginPath(); c0.moveTo(p.x - sz*2.5, p.y); c0.lineTo(p.x + sz*2.5, p.y);
+          c0.moveTo(p.x, p.y - sz*2.5); c0.lineTo(p.x, p.y + sz*2.5);
+          c0.stroke();
+          c0.restore();
+        }
+      }
+
+      // Scene 1: Constellation
+      if (idx === 1) {
+        var c1 = ctx[1];
+        c1.save();
+        for (var li = 0; li < STAR_LINKS.length; li++) {
+          var a = STAR_LINKS[li][0], b = STAR_LINKS[li][1];
+          if (a >= STARS.length || b >= STARS.length) continue;
+          var s1 = STARS[a], s2 = STARS[b];
+          var x1 = s1.x * W, y1 = s1.y * H, x2 = s2.x * W, y2 = s2.y * H;
+          var pulse = .05 + .05 * Math.sin(frame * .02 + s1.ph);
+          c1.strokeStyle = 'rgba(254,202,87,' + pulse + ')';
+          c1.lineWidth = .5;
+          c1.beginPath(); c1.moveTo(x1, y1); c1.lineTo(x2, y2); c1.stroke();
+        }
+        c1.restore();
+        for (var si = 0; si < STARS.length; si++) {
+          var s = STARS[si], sx = s.x * W, sy = s.y * H;
+          var tw = .4 + .6 * (.5 + .5 * Math.sin(frame * .03 * s.sp + s.ph));
+          var sr = s.r * (.7 + .3 * tw);
+          c1.save();
+          c1.globalAlpha = .3 + .7 * tw;
+          c1.shadowColor = '#feca57'; c1.shadowBlur = 12;
+          c1.fillStyle = s.label ? '#feca57' : '#fff';
+          c1.beginPath(); c1.arc(sx, sy, sr, 0, 6.28); c1.fill();
+          c1.restore();
+          if (s.label) {
+            c1.save();
+            c1.globalAlpha = .45;
+            c1.fillStyle = '#fff';
+            c1.font = '9px sans-serif';
+            c1.textAlign = 'center';
+            c1.fillText(s.label, sx, sy + s.r + 12);
+            c1.restore();
+          }
+        }
+      }
+
+      // Scene 2: Glow
+      if (idx === 2) {
+        if (frame % 10 === 0) spawnGlow();
+        var c2 = ctx[2], l2 = PL[2];
+        for (var i2 = l2.length - 1; i2 >= 0; i2--) {
+          var p2 = l2[i2]; if (p2.used === false) { l2.splice(i2,1); continue; }
+          p2.life++; if (p2.life > p2.max) { free(p2); l2.splice(i2,1); continue; }
+          p2.x += p2.vx; p2.y += p2.vy; p2.vx *= p2.f;
+          var lr = p2.life / p2.max;
+          c2.save();
+          c2.globalAlpha = p2.a * (1 - lr);
+          c2.shadowColor = p2.c; c2.shadowBlur = 30;
+          c2.fillStyle = p2.c;
+          c2.beginPath(); c2.arc(p2.x, p2.y, p2.sz * (.3 + lr * 1.5), 0, 6.28); c2.fill();
+          c2.restore();
+        }
+        // candle flicker
+        var flms = document.querySelectorAll('.cwl .flm');
+        for (var fi = 0; fi < flms.length; fi++) {
+          var fl = .85 + Math.random() * .3;
+          flms[fi].style.transform = 'translateX(-50%) scale(' + fl + ')';
+        }
+      }
+
+      // Scene 3: Warmth
+      if (idx === 3) {
+        if (frame % 8 === 0) spawnWarm();
+        var c3 = ctx[3], l3 = PL[3];
+        for (var i3 = l3.length - 1; i3 >= 0; i3--) {
+          var p3 = l3[i3]; if (p3.used === false) { l3.splice(i3,1); continue; }
+          p3.life++; if (p3.life > p3.max) { free(p3); l3.splice(i3,1); continue; }
+          p3.x += p3.vx; p3.y += p3.vy; p3.vx *= p3.f;
+          var lr = p3.life / p3.max;
+          c3.save();
+          c3.globalAlpha = p3.a * (1 - lr);
+          c3.shadowColor = p3.c; c3.shadowBlur = 18;
+          c3.fillStyle = p3.c;
+          c3.beginPath(); c3.arc(p3.x, p3.y, p3.sz * (.5 + lr), 0, 6.28); c3.fill();
+          c3.restore();
+        }
+        // central warm glow
+        c3.save();
+        c3.globalAlpha = .03 + .025 * Math.sin(frame * .015);
+        c3.shadowColor = '#feca57'; c3.shadowBlur = 100;
+        c3.fillStyle = '#feca57';
+        c3.beginPath(); c3.arc(W * .5, H * .4, 70, 0, 6.28); c3.fill();
+        c3.restore();
+      }
+
+      // Scene 4: Fireworks + confetti + smoke
+      if (idx === 4) {
+        var c4 = ctx[4], l4 = PL[4];
+
+        // rockets
+        if (frame % 12 === 0 && rocketList.length < 5) launchRk();
+        for (var ri = rocketList.length - 1; ri >= 0; ri--) {
+          var r = rocketList[ri];
+          if (!r.alive) { rocketList.splice(ri,1); continue; }
+          r.y -= r.speed; r.x += r.vx; r.speed *= .99;
+          c4.save();
+          c4.globalAlpha = .3;
+          c4.shadowColor = r.c; c4.shadowBlur = 12;
+          c4.fillStyle = r.c;
+          c4.beginPath(); c4.arc(r.x, r.y, 2, 0, 6.28); c4.fill();
+          c4.restore();
+          if (r.y <= r.target || r.speed < .6) { burstRk(r); r.alive = false; }
+        }
+
+        // explosions
+        for (var i4 = l4.length - 1; i4 >= 0; i4--) {
+          var p4 = l4[i4];
+          if (p4.used === false) { l4.splice(i4,1); continue; }
+          // skip confetti in explosion loop
+          if (p4.rs !== undefined && p4.rs !== 0) continue; // confetti has rotSpeed
+          p4.life++; if (p4.life > p4.max) { free(p4); l4.splice(i4,1); continue; }
+          p4.x += p4.vx; p4.y += p4.vy; p4.vy += p4.g; p4.vx *= p4.f; p4.vy *= p4.f;
+          var lr4 = p4.life / p4.max;
+          c4.save();
+          c4.globalAlpha = (1 - lr4) * .8;
+          c4.shadowColor = p4.c; c4.shadowBlur = 8;
+          c4.fillStyle = p4.c;
+          c4.beginPath(); c4.arc(p4.x, p4.y, Math.max(.5, p4.sz * (1 - lr4 * .5)), 0, 6.28); c4.fill();
+          c4.restore();
+        }
+
+        // confetti
+        if (frame % 4 === 0) spawnConf();
+        for (var ic = l4.length - 1; ic >= 0; ic--) {
+          var pc = l4[ic];
+          if (pc.used === false) { l4.splice(ic,1); continue; }
+          if (pc.rs === 0 || pc.rs === undefined) continue; // not confetti
+          pc.life++; if (pc.life > pc.max) { free(pc); l4.splice(ic,1); continue; }
+          pc.x += pc.vx; pc.y += pc.vy; pc.vy += pc.g; pc.vx *= pc.f;
+          pc.rot += pc.rs;
+          c4.save();
+          c4.globalAlpha = pc.a * (1 - pc.life / pc.max);
+          c4.translate(pc.x, pc.y);
+          c4.rotate(pc.rot * .01745);
+          c4.fillStyle = pc.c;
+          c4.fillRect(-pc.sz * .5, -pc.sz * .25, pc.sz, pc.sz * .5);
+          c4.restore();
+        }
+
+        // smoke puff particles (drawn on same canvas)
+        drawSmoke(c4);
+
+        // center glow
+        c4.save();
+        c4.globalAlpha = .03 + .02 * Math.sin(frame * .025);
+        c4.shadowColor = '#feca57'; c4.shadowBlur = 120;
+        c4.fillStyle = '#feca57';
+        c4.beginPath(); c4.arc(W * .5, H * .45, 50, 0, 6.28); c4.fill();
+        c4.restore();
+      }
+
+      rid = requestAnimationFrame(draw);
+    }
+
+    // ──────────────────────── CANDLE BLOW OUT ───────────────
+    var smokeParticles = [];
+    var candleOut = false;
+    var candleTimer = null;
+    var flickerTimer = null;
+
+    function blowCandle() {
+      if (candleOut) return;
+      candleOut = true;
+
+      var flame = document.getElementById('big-flame');
+      var candle = document.getElementById('big-candle');
+      candle.classList.add('out');
+
+      // spawn smoke puff
+      var box = document.getElementById('cake-box');
+      var rect = box.getBoundingClientRect();
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top + rect.height * .05;
+
+      for (var i = 0; i < 30; i++) {
+        var angle = Math.random() * 6.28;
+        var dist = Math.random() * 25;
+        smokeParticles.push({
+          x: cx + Math.cos(angle) * dist,
+          y: cy + Math.sin(angle) * dist - 10,
+          vx: Math.cos(angle) * (.3 + Math.random() * 1.2) + (Math.random() - .5) * .3,
+          vy: -(.5 + Math.random() * 1.5),
+          sz: 3 + Math.random() * 10,
+          life: 0,
+          max: 60 + Math.random() * 50,
+          a: .3 + Math.random() * .3
+        });
+      }
+
+      // update message
+      document.getElementById('finale-msg').innerHTML = '소원을 빌어보세요 ✨<br><span style="font-size:.7em;opacity:.6;">이미 이루어졌을지도 몰라요</span>';
+    }
+
+    function drawSmoke(c) {
+      for (var i = smokeParticles.length - 1; i >= 0; i--) {
+        var s = smokeParticles[i];
+        s.life++;
+        if (s.life > s.max) { smokeParticles.splice(i, 1); continue; }
+        s.x += s.vx; s.y += s.vy;
+        s.vy *= .99;
+        s.vx *= .98;
+        s.sz += .05;
+        var lr = s.life / s.max;
+        c.save();
+        c.globalAlpha = s.a * (1 - lr);
+        c.fillStyle = 'rgba(200,200,200,' + (.3 * (1 - lr)) + ')';
+        c.shadowColor = 'rgba(200,200,200,.1)';
+        c.shadowBlur = 20;
+        c.beginPath();
+        c.arc(s.x, s.y, s.sz, 0, 6.28);
+        c.fill();
+        c.restore();
+      }
+    }
+
+    function startCandleTimer() {
+      if (candleTimer) clearTimeout(candleTimer);
+      if (flickerTimer) { clearInterval(flickerTimer); flickerTimer = null; }
+      candleOut = false;
+      var flame = document.getElementById('big-flame');
+      var candle = document.getElementById('big-candle');
+      candle.classList.remove('out');
+      flame.style.transform = 'translateX(-50%) scale(1)';
+      flame.style.opacity = '1';
+      candleTimer = setTimeout(function () {
+        if (cur !== 4) return;
+        var flickerCount = 0;
+        flickerTimer = setInterval(function () {
+          flickerCount++;
+          var sc = .5 + Math.random() * 1;
+          flame.style.transform = 'translateX(-50%) scale(' + sc + ')';
+          flame.style.opacity = .4 + Math.random() * .6;
+          if (flickerCount > 10 || candleOut || cur !== 4) {
+            clearInterval(flickerTimer);
+            flickerTimer = null;
+            flame.style.transform = 'translateX(-50%) scale(1)';
+            flame.style.opacity = '1';
+            if (!candleOut && cur === 4) blowCandle();
+          }
+        }, 120);
+      }, 13000);
+    }
+
+    // ──────────────────────── PAGE ENTER CALLBACK ──────────
+    function onPageEnter(idx, prev) {
+      // clear previous page effects
+      for (var i = 0; i < TOTAL_PAGES; i++) {
+        if (i !== idx) clearPageFx(i);
+      }
+
+      // cleanup flicker if leaving page 4
+      if (prev === 4 && flickerTimer) {
+        clearInterval(flickerTimer);
+        flickerTimer = null;
+      }
+
+      if (idx === 4) {
+        // reset message
+        document.getElementById('finale-msg').innerHTML = '오늘은 당신이 이 세상에 태어난<br>가장 특별한 날입니다';
+        var candle = document.getElementById('big-candle');
+        candle.classList.remove('out');
+        var flame = document.getElementById('big-flame');
+        flame.style.transform = 'translateX(-50%) scale(1)';
+        flame.style.opacity = '1';
+        smokeParticles.length = 0;
+        // launch rockets
+        for (var k = 0; k < 4; k++) setTimeout(launchRk, k * 400);
+        // start candle timer
+        startCandleTimer();
+      }
+
+      if (idx === 2) {
+        animateDigits();
+        setTimeout(glowDigits, 1200);
+      }
+    }
+
+    // ──────────────────────── DIGIT ANIMATION ──────────────
+    var digitRolled = false;
+
+    function animateDigits() {
+      if (!digitRolled) {
+        digitRolled = true;
+
+      // birthday digit roll
+      var cells = document.querySelectorAll('#bday-digits .digit-cell');
+      cells.forEach(function (cell) {
+        var target = cell.dataset.d;
+        var strip = document.createElement('div');
+        strip.className = 'digit-strip';
+        // add numbers 0-9 then target
+        var nums = [];
+        for (var n = 0; n <= 9; n++) nums.push(n);
+        nums.push(parseInt(target));
+        nums.forEach(function (num) {
+          var sp = document.createElement('span');
+          sp.textContent = num;
+          strip.appendChild(sp);
+        });
+        cell.innerHTML = '';
+        cell.appendChild(strip);
+        // animate to final position
+        requestAnimationFrame(function () {
+          var offset = -(nums.length - 1) * 1.1;
+          strip.style.transform = 'translateY(' + offset + 'em)';
+        });
+      });
+
+      // probability digits glow burst
+      glowDigits();
+      }
+    }
+
+    function glowDigits() {
+      var probDig = document.getElementById('prob-digits');
+      var probUnit = document.getElementById('prob-unit');
+      if (!probDig) return;
+      probDig.style.transition = 'text-shadow .3s';
+      probUnit.style.transition = 'text-shadow .3s';
+      probDig.style.textShadow = '0 0 40px rgba(72,219,251,.6), 0 0 80px rgba(72,219,251,.3)';
+      probUnit.style.textShadow = '0 0 40px rgba(240,147,251,.6), 0 0 80px rgba(240,147,251,.3)';
+      setTimeout(function () {
+        probDig.style.textShadow = 'none';
+        probUnit.style.textShadow = 'none';
+      }, 500);
+    }
+
+    // ──────────────────────── INIT ─────────────────────────
+    function init() {
+      initCanvas();
+
+      // build candles
+      var cwrap = document.getElementById('cwrap');
+      var show = Math.min(AGE, 40);
+      for (var ci = 0; ci < show; ci++) {
+        var cdl = document.createElement('div');
+        cdl.className = 'cwl';
+        cdl.innerHTML = '<div class="flm"><div class="flm-in"></div></div>';
+        cwrap.appendChild(cdl);
+      }
+
+      // seed sparkles
+      for (var s = 0; s < 30; s++) spawnSpark();
+
+      // init with transitions off → then enable after paint
+      pages.forEach(function (el) { el.classList.add('canvas-off'); });
+      applyPageClasses();
+      requestAnimationFrame(function () {
+        pages.forEach(function (el) { el.classList.remove('canvas-off'); });
+      });
+      draw();
+
+      // auto-fire rockets
+      setInterval(function () {
+        if (cur === 4 && Math.random() < .35) launchRk();
+      }, 700);
+
+      // cake click to blow
+      document.getElementById('cake-box').addEventListener('click', function () {
+        if (cur === 4 && !candleOut) blowCandle();
+      });
+
+      // pause when hidden
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden && rid) { cancelAnimationFrame(rid); rid = 0; }
+        else if (!document.hidden && !rid) draw();
+      });
+    }
+
+    // resize debounce
+    var rt;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () {
+        W = window.innerWidth; H = window.innerHeight;
+        resizeCanvas(); applyPageClasses();
+      }, 120);
+    });
+
+    // ─── BGM controls ───
+    var bgm = document.getElementById('bgm');
+    var speaker = document.getElementById('speaker');
+    var playBtn = document.getElementById('play-btn');
+    var bgmPlaying = false;
+
+    playBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      bgm.play().then(function () {
+        bgmPlaying = true;
+        playBtn.classList.add('playing');
+        speaker.classList.add('show');
+      })['catch'](function () {});
+    });
+
+    speaker.addEventListener('click', function () {
+      if (bgm.paused) {
+        bgm.play();
+        speaker.classList.remove('muted');
+      } else {
+        bgm.pause();
+        speaker.classList.add('muted');
+      }
+    });
+
+    // show speaker once music is playing
+    var _orig = goTo;
+    goTo = function (idx) {
+      if (bgmPlaying) speaker.classList.add('show');
+      _orig(idx);
+    };
+
+    try { init(); }
+    catch (e) { console.error(e); document.getElementById('deck').innerHTML += '<div style="position:fixed;bottom:0;left:0;width:100%;padding:1rem;background:#c00;color:#fff;z-index:999;font-size:1rem;text-align:center;">⚠ Error: ' + (e.message || e) + '</div>'; }
+  })();
+  </script>
+</body>
+</html>
